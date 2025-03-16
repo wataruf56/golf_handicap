@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>ゴルフハンディキャップ計算</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --background: #f5f5f5;
+            --card-background: white;
+            --border-color: #ddd;
+            --highlight: #e8f5e9;
+            --text-color: #333;
+            --text-secondary: #666;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background);
+            color: var(--text-color);
+            line-height: 1.4;
+            -webkit-text-size-adjust: 100%;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0 0 16px 0;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            padding: 0 12px;
+        }
+
+        .select-group {
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .select-container {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .select-container label {
+            display: block;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .select-styled {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -20px;
+            padding: 0 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            background-color: white;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 44px;
+        }
+
+        input[type="number"] {
+            text-align: right;
+            width: 100px;
+        }
+
+        .player-name-input {
+            width: 140px;
+        }
+
+        .best-score {
+            background-color: var(--highlight);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 16px;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            z-index: 1000;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .controls button {
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            height: 50px;
+            width: 100%;
+        }
+
+        .calculate-button {
+            background-color: var(--primary-color);
+        }
+
+        .calculate-button:active {
+            background-color: var(--primary-hover);
+        }
+
+        .reset-button {
+            background-color: #dc3545;
+        }
+
+        .reset-button:active {
+            background-color: #c82333;
+        }
+
+        .save-button {
+            background-color: #007bff;
+        }
+
+        .save-button:active {
+            background-color: #0056b3;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 400px;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .history {
+            margin-top: 32px;
+        }
+
+        .history h2 {
+            font-size: 20px;
+            margin: 0 0 16px 0;
+            color: var(--text-color);
+        }
+
+        .history-table {
+            font-size: 14px;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            input[type="number"] {
+                width: 80px;
+            }
+
+            .player-name-input {
+                width: 120px;
+            }
+
+            .controls button {
+                font-size: 14px;
+                padding: 12px;
+                height: 44px;
+            }
+        }
+
+        /* タッチデバイスでのインタラクション改善 */
+        @media (hover: none) {
+            input, 
+            select, 
+            button {
+                cursor: default;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>ゴルフハンディキャップ計算</h1>
+                <div class="description">
+                    <p>※最低スコアのプレイヤーを基準（ハンディキャップ0）として計算します</p>
+                    <p>※ハンディキャップは (プレイヤースコア - 最低スコア) × <span id="coefficient-display">0.8</span> で計算されます</p>
+                </div>
+            </div>
+
+            <div class="select-group">
+                <div class="select-container">
+                    <label for="playerCount">プレイヤー人数</label>
+                    <select id="playerCount" class="select-styled">
+                        <option value="2">2人</option>
+                        <option value="3">3人</option>
+                        <option value="4" selected>4人</option>
+                        <option value="5">5人</option>
+                        <option value="6">6人</option>
+                        <option value="7">7人</option>
+                        <option value="8">8人</option>
+                        <option value="9">9人</option>
+                        <option value="10">10人</option>
+                        <option value="11">11人</option>
+                        <option value="12">12人</option>
+                        <option value="13">13人</option>
+                        <option value="14">14人</option>
+                        <option value="15">15人</option>
+                        <option value="16">16人</option>
+                        <option value="17">17人</option>
+                        <option value="18">18人</option>
+                        <option value="19">19人</option>
+                        <option value="20">20人</option>
+                        <option value="21">21人</option>
+                        <option value="22">22人</option>
+                        <option value="23">23人</option>
+                        <option value="24">24人</option>
+                        <option value="25">25人</option>
+                        <option value="26">26人</option>
+                        <option value="27">27人</option>
+                        <option value="28">28人</option>
+                        <option value="29">29人</option>
+                        <option value="30">30人</option>
+                        <option value="31">31人</option>
+                        <option value="32">32人</option>
+                        <option value="33">33人</option>
+                        <option value="34">34人</option>
+                        <option value="35">35人</option>
+                        <option value="36">36人</option>
+                        <option value="37">37人</option>
+                        <option value="38">38人</option>
+                        <option value="39">39人</option>
+                        <option value="40">40人</option>
+                        <option value="41">41人</option>
+                        <option value="42">42人</option>
+                        <option value="43">43人</option>
+                        <option value="44">44人</option>
+                        <option value="45">45人</option>
+                        <option value="46">46人</option>
+                        <option value="47">47人</option>
+                        <option value="48">48人</option>
+                        <option value="49">49人</option>
+                        <option value="50">50人</option>
+                    </select>
+                </div>
+                
+                <div class="select-container">
+                    <label for="handicapCoefficient">ハンディキャップ係数</label>
+                    <select id="handicapCoefficient" class="select-styled">
+                        <option value="1.0">1.0（100%）</option>
+                        <option value="0.9">0.9（90%）</option>
+                        <option value="0.8" selected>0.8（80%）</option>
+                        <option value="0.7">0.7（70%）</option>
+                        <option value="0.6">0.6（60%）</option>
+                        <option value="0.5">0.5（50%）</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>名前</th>
+                            <th>スコア</th>
+                            <th>HDCP</th>
+                            <th>調整後</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playerTable">
+                        <!-- JavaScriptで動的に生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card history">
+            <h2>計算履歴</h2>
+            <div class="table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>日時</th>
+                            <th>人数</th>
+                            <th>最低</th>
+                            <th>最高</th>
+                            <th>係数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable">
+                        <!-- JavaScriptで動的に生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="calculateButton" class="calculate-button">計算</button>
+        <button id="resetButton" class="reset-button">リセット</button>
+        <button id="saveButton" class="save-button">保存</button>
+    </div>
+
+    <div id="alertBox" class="alert"></div>
+
+    <script>
+        // グローバル変数
+        let playerCount = 4;
+        let handicapCoefficient = 0.8;
+        let savedResults = [];
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 人数選択の変更イベント
+            document.getElementById('playerCount').addEventListener('change', function() {
+                playerCount = parseInt(this.value);
+                initializePlayers();
+            });
+
+            // 係数選択の変更イベント
+            document.getElementById('handicapCoefficient').addEventListener('change', function() {
+                handicapCoefficient = parseFloat(this.value);
+                document.getElementById('coefficient-display').textContent = handicapCoefficient.toString();
+            });
+
+            // ボタンのイベントリスナー
+            document.getElementById('calculateButton').addEventListener('click', calculateHandicaps);
+            document.getElementById('resetButton').addEventListener('click', resetForm);
+            document.getElementById('saveButton').addEventListener('click', saveResults);
+
+            // 初期化処理
+            loadSavedResults();
+            initializePlayers();
+            updateHistoryTable();
+        });
+
+        // 保存データの読み込み
+        function loadSavedResults() {
+            const stored = localStorage.getItem('golfResults');
+            if (stored) {
+                try {
+                    savedResults = JSON.parse(stored);
+                } catch (e) {
+                    console.error('保存データの読み込みに失敗:', e);
+                    savedResults = [];
+                }
+            }
+        }
+
+        // プレイヤーテーブルの初期化
+        function initializePlayers() {
+            const tbody = document.getElementById('playerTable');
+            tbody.innerHTML = '';
+
+            for (let i = 1; i <= playerCount; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="text" id="name${i}" placeholder="名前${i}" class="player-name-input">
+                    </td>
+                    <td>
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="score${i}" min="72" max="200" class="score-input">
+                    </td>
+                    <td id="handicap${i}">-</td>
+                    <td id="adjustedScore${i}">-</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            // スコア入力のバリデーション
+            document.querySelectorAll('.score-input').forEach(input => {
+                input.addEventListener('input', validateScore);
+            });
+        }
+
+        // スコア入力のバリデーション
+        function validateScore(event) {
+            const input = event.target;
+            const value = Number(input.value);
+            
+            if (value && (value < 72 || value > 200)) {
+                showAlert('スコアは72から200の間で入力してください', 'error');
+                input.classList.add('invalid');
+            } else {
+                input.classList.remove('invalid');
+            }
+        }
+
+        // ハンディキャップの計算
+        function calculateHandicaps() {
+            let scores = [];
+            for (let i = 1; i <= playerCount; i++) {
+                const scoreInput = document.getElementById(`score${i}`);
+                const nameInput = document.getElementById(`name${i}`);
+                if (scoreInput.value && Number(scoreInput.value) >= 72) {
+                    scores.push({
+                        player: i,
+                        name: nameInput.value || `${i}`,
+                        score: Number(scoreInput.value)
+                    });
+                }
+            }
+
+            if (scores.length === 0) {
+                showAlert('スコアを入力してください', 'error');
+                return;
+            }
+
+            const minScore = Math.min(...scores.map(s => s.score));
+
+            for (let i = 1; i <= playerCount; i++) {
+                const row = document.getElementById(`score${i}`).parentElement.parentElement;
+                row.classList.remove('best-score');
+            }
+
+            scores.forEach(playerData => {
+                const handicapCell = document.getElementById(`handicap${playerData.player}`);
+                const adjustedScoreCell = document.getElementById(`adjustedScore${playerData.player}`);
+                const row = document.getElementById(`score${playerData.player}`).parentElement.parentElement;
+                
+                // 計算ロジックの修正: スコア差に係数を掛ける
+                const scoreDiff = playerData.score - minScore;
+                const handicap = Math.round(scoreDiff * handicapCoefficient); // 整数に丸める
+                
+                handicapCell.textContent = handicap;
+                const adjustedScore = playerData.score - handicap;
+                adjustedScoreCell.textContent = adjustedScore;
+
+                if (playerData.score === minScore) {
+                    row.classList.add('best-score');
+                    handicapCell.textContent = '0';
+                    adjustedScoreCell.textContent = playerData.score;
+                }
+            });
+
+            showAlert('計算完了', 'success');
+        }
+
+        // フォームのリセット
+        function resetForm() {
+            if (confirm('入力内容をリセットしますか？')) {
+                const tbody = document.getElementById('playerTable');
+                const rows = tbody.getElementsByTagName('tr');
+                
+                for (let i = 0; i < rows.length; i++) {
+                    const inputs = rows[i].getElementsByTagName('input');
+                    for (let input of inputs) {
+                        input.value = '';
+                    }
+                    const handicapCell = rows[i].querySelector('[id^="handicap"]');
+                    const adjustedScoreCell = rows[i].querySelector('[id^="adjustedScore"]');
+                    
+                    if (handicapCell) handicapCell.textContent = '-';
+                    if (adjustedScoreCell) adjustedScoreCell.textContent = '-';
+                    
+                    rows[i].classList.remove('best-score');
+                }
+                showAlert('リセットしました', 'success');
+            }
+        }
+
+        // 結果の保存
+        function saveResults() {
+            let currentResults = [];
+            let hasValidScore = false;
+
+            for (let i = 1; i <= playerCount; i++) {
+                const scoreInput = document.getElementById(`score${i}`);
+                const nameInput = document.getElementById(`name${i}`);
+                const handicapCell = document.getElementById(`handicap${i}`);
+                
+                if (scoreInput.value) {
+                    hasValidScore = true;
+                    currentResults.push({
+                        name: nameInput.value || `${i}`,
+                        score: Number(scoreInput.value),
+                        handicap: handicapCell.textContent
+                    });
+                }
+            }
+
+            if (!hasValidScore) {
+                showAlert('保存するスコアがありません', 'error');
+                return;
+            }
+
+            const result = {
+                date: new Date().toLocaleString(),
+                players: currentResults,
+                minScore: Math.min(...currentResults.map(r => r.score)),
+                maxScore: Math.max(...currentResults.map(r => r.score)),
+                coefficient: handicapCoefficient
+            };
+
+            savedResults.unshift(result);
+            if (savedResults.length > 10) savedResults.pop();
+
+            localStorage.setItem('golfResults', JSON.stringify(savedResults));
+            updateHistoryTable();
+            showAlert('結果を保存しました', 'success');
+        }
+
+        // 履歴テーブルの更新
+        function updateHistoryTable() {
+            const tbody = document.getElementById('historyTable');
+            tbody.innerHTML = '';
+
+            savedResults.forEach(result => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${result.date}</td>
+                    <td>${result.players.length}名</td>
+                    <td>${result.minScore}</td>
+                    <td>${result.maxScore}</td>
+                    <td>${result.coefficient || '0.8'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // アラートの表示
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
