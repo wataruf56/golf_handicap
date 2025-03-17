@@ -14,6 +14,7 @@
             --highlight: #e8f5e9;
             --text-color: #333;
             --text-secondary: #666;
+            --warning-color: #ff9800;
         }
 
         * {
@@ -65,6 +66,22 @@
             color: var(--text-secondary);
             margin-bottom: 24px;
             padding: 0 12px;
+        }
+
+        .storage-note {
+            font-size: 13px;
+            color: var(--warning-color);
+            background-color: rgba(255, 152, 0, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid var(--warning-color);
+            margin-top: 12px;
+        }
+
+        .storage-icon {
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
         }
 
         .select-group {
@@ -237,6 +254,12 @@
             color: #155724;
         }
 
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+
         .history {
             margin-top: 32px;
         }
@@ -255,6 +278,43 @@
         .history-table td {
             padding: 12px;
             white-space: nowrap;
+        }
+
+        .export-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        .export-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .import-container {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .import-container input {
+            display: none;
+        }
+
+        .import-label {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
         }
 
         @media (max-width: 480px) {
@@ -293,6 +353,14 @@
                 cursor: default;
             }
         }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +371,10 @@
                 <div class="description">
                     <p>※最低スコアのプレイヤーを基準（ハンディキャップ0）として計算します</p>
                     <p>※ハンディキャップは (プレイヤースコア - 最低スコア) × <span id="coefficient-display">0.8</span> で計算されます</p>
+                    
+                    <div class="storage-note">
+                        <div class="storage-icon">⚠️</div> データは現在使用中のブラウザに保存されます。アドレスバーの完全なURLをブックマークして、次回も同じURLからアクセスしてください。
+                    </div>
                 </div>
             </div>
 
@@ -393,7 +465,14 @@
         </div>
 
         <div class="card history">
-            <h2>計算履歴</h2>
+            <h2>計算履歴 
+                <a href="#" class="export-btn" id="exportBtn">エクスポート</a>
+            </h2>
+            <div class="import-container">
+                <label for="importFile" class="import-label">データをインポート</label>
+                <input type="file" id="importFile" accept=".json">
+            </div>
+            
             <div class="table-container">
                 <table class="history-table">
                     <thead>
@@ -421,11 +500,16 @@
 
     <div id="alertBox" class="alert"></div>
 
+    <footer>
+        <p>ゴルフハンディキャップ計算 v1.0 | このURLをブックマークしてご利用ください</p>
+    </footer>
+
     <script>
         // グローバル変数
         let playerCount = 4;
         let handicapCoefficient = 0.8;
         let savedResults = [];
+        const storageKey = 'golfResults_' + window.location.pathname.replace(/\//g, '_');
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
@@ -445,16 +529,23 @@
             document.getElementById('calculateButton').addEventListener('click', calculateHandicaps);
             document.getElementById('resetButton').addEventListener('click', resetForm);
             document.getElementById('saveButton').addEventListener('click', saveResults);
+            document.getElementById('exportBtn').addEventListener('click', exportData);
+            document.getElementById('importFile').addEventListener('change', importData);
 
             // 初期化処理
             loadSavedResults();
             initializePlayers();
             updateHistoryTable();
+            
+            // 保存データがあることを通知
+            if (savedResults.length > 0) {
+                showAlert('保存されたデータがあります', 'info');
+            }
         });
 
         // 保存データの読み込み
         function loadSavedResults() {
-            const stored = localStorage.getItem('golfResults');
+            const stored = localStorage.getItem(storageKey);
             if (stored) {
                 try {
                     savedResults = JSON.parse(stored);
@@ -463,6 +554,56 @@
                     savedResults = [];
                 }
             }
+        }
+
+        // データエクスポート
+        function exportData(e) {
+            e.preventDefault();
+            if (savedResults.length === 0) {
+                showAlert('エクスポートするデータがありません', 'warning');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(savedResults, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'golf_handicap_data.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert('データをエクスポートしました', 'success');
+        }
+        
+        // データインポート
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    if (Array.isArray(importedData)) {
+                        if (confirm('既存のデータを上書きしますか？')) {
+                            savedResults = importedData;
+                            localStorage.setItem(storageKey, JSON.stringify(savedResults));
+                            updateHistoryTable();
+                            showAlert('データをインポートしました', 'success');
+                        }
+                    } else {
+                        showAlert('無効なデータ形式です', 'error');
+                    }
+                } catch (e) {
+                    console.error('インポートエラー:', e);
+                    showAlert('データの読み込みに失敗しました', 'error');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = ''; // ファイル入力をリセット
         }
 
         // プレイヤーテーブルの初期化
@@ -536,7 +677,7 @@
                 const adjustedScoreCell = document.getElementById(`adjustedScore${playerData.player}`);
                 const row = document.getElementById(`score${playerData.player}`).parentElement.parentElement;
                 
-                // 計算ロジックの修正: スコア差に係数を掛ける
+                // 計算ロジック: スコア差に係数を掛ける
                 const scoreDiff = playerData.score - minScore;
                 const handicap = Math.round(scoreDiff * handicapCoefficient); // 整数に丸める
                 
@@ -611,11 +752,26 @@
             };
 
             savedResults.unshift(result);
-            if (savedResults.length > 10) savedResults.pop();
+            if (savedResults.length > 20) savedResults.pop(); // 20件まで保存
 
-            localStorage.setItem('golfResults', JSON.stringify(savedResults));
+            // 現在のURLをストレージキーに含める
+            localStorage.setItem(storageKey, JSON.stringify(savedResults));
+            
             updateHistoryTable();
             showAlert('結果を保存しました', 'success');
+            
+            // URLにタイムスタンプを追加（オプション機能）
+            try {
+                // URLに現在のタイムスタンプパラメータを追加（データ保存のマーカーとして）
+                const timestamp = new Date().getTime();
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('t', timestamp);
+                // URLを更新（ページは再読み込みされない）
+                window.history.replaceState({}, '', currentUrl.toString());
+            } catch (e) {
+                console.error('URL更新エラー:', e);
+                // エラーが発生しても処理は継続
+            }
         }
 
         // 履歴テーブルの更新
