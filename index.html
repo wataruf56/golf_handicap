@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>ゴルフハンディキャップ計算</title>
+    <title>シンプルゴルフハンディキャップ計算</title>
     <style>
         :root {
             --primary-color: #4CAF50;
@@ -14,7 +14,6 @@
             --highlight: #e8f5e9;
             --text-color: #333;
             --text-secondary: #666;
-            --warning-color: #ff9800;
         }
 
         * {
@@ -66,22 +65,6 @@
             color: var(--text-secondary);
             margin-bottom: 24px;
             padding: 0 12px;
-        }
-
-        .storage-note {
-            font-size: 13px;
-            color: var(--warning-color);
-            background-color: rgba(255, 152, 0, 0.1);
-            padding: 10px;
-            border-radius: 6px;
-            border-left: 4px solid var(--warning-color);
-            margin-top: 12px;
-        }
-
-        .storage-icon {
-            display: inline-block;
-            margin-right: 5px;
-            vertical-align: middle;
         }
 
         .select-group {
@@ -182,7 +165,7 @@
             background: white;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
             z-index: 1000;
             max-width: 800px;
@@ -218,14 +201,6 @@
             background-color: #c82333;
         }
 
-        .save-button {
-            background-color: #007bff;
-        }
-
-        .save-button:active {
-            background-color: #0056b3;
-        }
-
         .alert {
             position: fixed;
             top: 20px;
@@ -252,69 +227,6 @@
             background-color: #d4edda;
             border: 1px solid #c3e6cb;
             color: #155724;
-        }
-
-        .alert-warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
-        }
-
-        .history {
-            margin-top: 32px;
-        }
-
-        .history h2 {
-            font-size: 20px;
-            margin: 0 0 16px 0;
-            color: var(--text-color);
-        }
-
-        .history-table {
-            font-size: 14px;
-        }
-
-        .history-table th,
-        .history-table td {
-            padding: 12px;
-            white-space: nowrap;
-        }
-
-        .export-btn {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 14px;
-            margin-left: 10px;
-            cursor: pointer;
-        }
-        
-        .export-btn:hover {
-            background-color: #0056b3;
-        }
-
-        .import-container {
-            margin-top: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .import-container input {
-            display: none;
-        }
-
-        .import-label {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: #6c757d;
-            color: white;
-            border-radius: 4px;
-            font-size: 14px;
-            cursor: pointer;
         }
 
         @media (max-width: 480px) {
@@ -371,10 +283,6 @@
                 <div class="description">
                     <p>※最低スコアのプレイヤーを基準（ハンディキャップ0）として計算します</p>
                     <p>※ハンディキャップは (プレイヤースコア - 最低スコア) × <span id="coefficient-display">0.8</span> で計算されます</p>
-                    
-                    <div class="storage-note">
-                        <div class="storage-icon">⚠️</div> データは現在使用中のブラウザに保存されます。アドレスバーの完全なURLをブックマークして、次回も同じURLからアクセスしてください。
-                    </div>
                 </div>
             </div>
 
@@ -401,36 +309,6 @@
                         <option value="18">18人</option>
                         <option value="19">19人</option>
                         <option value="20">20人</option>
-                        <option value="21">21人</option>
-                        <option value="22">22人</option>
-                        <option value="23">23人</option>
-                        <option value="24">24人</option>
-                        <option value="25">25人</option>
-                        <option value="26">26人</option>
-                        <option value="27">27人</option>
-                        <option value="28">28人</option>
-                        <option value="29">29人</option>
-                        <option value="30">30人</option>
-                        <option value="31">31人</option>
-                        <option value="32">32人</option>
-                        <option value="33">33人</option>
-                        <option value="34">34人</option>
-                        <option value="35">35人</option>
-                        <option value="36">36人</option>
-                        <option value="37">37人</option>
-                        <option value="38">38人</option>
-                        <option value="39">39人</option>
-                        <option value="40">40人</option>
-                        <option value="41">41人</option>
-                        <option value="42">42人</option>
-                        <option value="43">43人</option>
-                        <option value="44">44人</option>
-                        <option value="45">45人</option>
-                        <option value="46">46人</option>
-                        <option value="47">47人</option>
-                        <option value="48">48人</option>
-                        <option value="49">49人</option>
-                        <option value="50">50人</option>
                     </select>
                 </div>
                 
@@ -463,53 +341,23 @@
                 </table>
             </div>
         </div>
-
-        <div class="card history">
-            <h2>計算履歴 
-                <a href="#" class="export-btn" id="exportBtn">エクスポート</a>
-            </h2>
-            <div class="import-container">
-                <label for="importFile" class="import-label">データをインポート</label>
-                <input type="file" id="importFile" accept=".json">
-            </div>
-            
-            <div class="table-container">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>日時</th>
-                            <th>人数</th>
-                            <th>最低</th>
-                            <th>最高</th>
-                            <th>係数</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTable">
-                        <!-- JavaScriptで動的に生成 -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <div class="controls">
         <button id="calculateButton" class="calculate-button">計算</button>
         <button id="resetButton" class="reset-button">リセット</button>
-        <button id="saveButton" class="save-button">保存</button>
     </div>
 
     <div id="alertBox" class="alert"></div>
 
     <footer>
-        <p>ゴルフハンディキャップ計算 v1.0 | このURLをブックマークしてご利用ください</p>
+        <p>シンプルゴルフハンディキャップ計算 v1.0</p>
     </footer>
 
     <script>
         // グローバル変数
         let playerCount = 4;
         let handicapCoefficient = 0.8;
-        let savedResults = [];
-        const storageKey = 'golfResults_' + window.location.pathname.replace(/\//g, '_');
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
@@ -528,83 +376,10 @@
             // ボタンのイベントリスナー
             document.getElementById('calculateButton').addEventListener('click', calculateHandicaps);
             document.getElementById('resetButton').addEventListener('click', resetForm);
-            document.getElementById('saveButton').addEventListener('click', saveResults);
-            document.getElementById('exportBtn').addEventListener('click', exportData);
-            document.getElementById('importFile').addEventListener('change', importData);
 
             // 初期化処理
-            loadSavedResults();
             initializePlayers();
-            updateHistoryTable();
-            
-            // 保存データがあることを通知
-            if (savedResults.length > 0) {
-                showAlert('保存されたデータがあります', 'info');
-            }
         });
-
-        // 保存データの読み込み
-        function loadSavedResults() {
-            const stored = localStorage.getItem(storageKey);
-            if (stored) {
-                try {
-                    savedResults = JSON.parse(stored);
-                } catch (e) {
-                    console.error('保存データの読み込みに失敗:', e);
-                    savedResults = [];
-                }
-            }
-        }
-
-        // データエクスポート
-        function exportData(e) {
-            e.preventDefault();
-            if (savedResults.length === 0) {
-                showAlert('エクスポートするデータがありません', 'warning');
-                return;
-            }
-            
-            const dataStr = JSON.stringify(savedResults, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'golf_handicap_data.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showAlert('データをエクスポートしました', 'success');
-        }
-        
-        // データインポート
-        function importData(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                try {
-                    const importedData = JSON.parse(event.target.result);
-                    if (Array.isArray(importedData)) {
-                        if (confirm('既存のデータを上書きしますか？')) {
-                            savedResults = importedData;
-                            localStorage.setItem(storageKey, JSON.stringify(savedResults));
-                            updateHistoryTable();
-                            showAlert('データをインポートしました', 'success');
-                        }
-                    } else {
-                        showAlert('無効なデータ形式です', 'error');
-                    }
-                } catch (e) {
-                    console.error('インポートエラー:', e);
-                    showAlert('データの読み込みに失敗しました', 'error');
-                }
-            };
-            reader.readAsText(file);
-            e.target.value = ''; // ファイル入力をリセット
-        }
 
         // プレイヤーテーブルの初期化
         function initializePlayers() {
@@ -716,80 +491,6 @@
                 }
                 showAlert('リセットしました', 'success');
             }
-        }
-
-        // 結果の保存
-        function saveResults() {
-            let currentResults = [];
-            let hasValidScore = false;
-
-            for (let i = 1; i <= playerCount; i++) {
-                const scoreInput = document.getElementById(`score${i}`);
-                const nameInput = document.getElementById(`name${i}`);
-                const handicapCell = document.getElementById(`handicap${i}`);
-                
-                if (scoreInput.value) {
-                    hasValidScore = true;
-                    currentResults.push({
-                        name: nameInput.value || `${i}`,
-                        score: Number(scoreInput.value),
-                        handicap: handicapCell.textContent
-                    });
-                }
-            }
-
-            if (!hasValidScore) {
-                showAlert('保存するスコアがありません', 'error');
-                return;
-            }
-
-            const result = {
-                date: new Date().toLocaleString(),
-                players: currentResults,
-                minScore: Math.min(...currentResults.map(r => r.score)),
-                maxScore: Math.max(...currentResults.map(r => r.score)),
-                coefficient: handicapCoefficient
-            };
-
-            savedResults.unshift(result);
-            if (savedResults.length > 20) savedResults.pop(); // 20件まで保存
-
-            // 現在のURLをストレージキーに含める
-            localStorage.setItem(storageKey, JSON.stringify(savedResults));
-            
-            updateHistoryTable();
-            showAlert('結果を保存しました', 'success');
-            
-            // URLにタイムスタンプを追加（オプション機能）
-            try {
-                // URLに現在のタイムスタンプパラメータを追加（データ保存のマーカーとして）
-                const timestamp = new Date().getTime();
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('t', timestamp);
-                // URLを更新（ページは再読み込みされない）
-                window.history.replaceState({}, '', currentUrl.toString());
-            } catch (e) {
-                console.error('URL更新エラー:', e);
-                // エラーが発生しても処理は継続
-            }
-        }
-
-        // 履歴テーブルの更新
-        function updateHistoryTable() {
-            const tbody = document.getElementById('historyTable');
-            tbody.innerHTML = '';
-
-            savedResults.forEach(result => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${result.date}</td>
-                    <td>${result.players.length}名</td>
-                    <td>${result.minScore}</td>
-                    <td>${result.maxScore}</td>
-                    <td>${result.coefficient || '0.8'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
         }
 
         // アラートの表示
