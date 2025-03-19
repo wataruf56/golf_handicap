@@ -393,7 +393,7 @@
                         <input type="text" id="name${i}" placeholder="名前${i}" class="player-name-input">
                     </td>
                     <td>
-                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="score${i}" min="72" max="200" class="score-input">
+                        <input type="number" inputmode="numeric" pattern="[0-9]*" id="score${i}" min="50" max="200" class="score-input">
                     </td>
                     <td id="handicap${i}">-</td>
                     <td id="adjustedScore${i}">-</td>
@@ -412,8 +412,8 @@
             const input = event.target;
             const value = Number(input.value);
             
-            if (value && (value < 72 || value > 200)) {
-                showAlert('スコアは72から200の間で入力してください', 'error');
+            if (value && (value < 50 || value > 200)) {
+                showAlert('スコアは50から200の間で入力してください', 'error');
                 input.classList.add('invalid');
             } else {
                 input.classList.remove('invalid');
@@ -426,7 +426,7 @@
             for (let i = 1; i <= playerCount; i++) {
                 const scoreInput = document.getElementById(`score${i}`);
                 const nameInput = document.getElementById(`name${i}`);
-                if (scoreInput.value && Number(scoreInput.value) >= 72) {
+                if (scoreInput.value && Number(scoreInput.value) >= 50) {
                     scores.push({
                         player: i,
                         name: nameInput.value || `${i}`,
