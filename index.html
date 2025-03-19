@@ -228,6 +228,11 @@
             border: 1px solid #c3e6cb;
             color: #155724;
         }
+        
+        input.invalid {
+            border: 2px solid #dc3545;
+            background-color: #fff8f8;
+        }
 
         @media (max-width: 480px) {
             .container {
@@ -423,16 +428,34 @@
         // ハンディキャップの計算
         function calculateHandicaps() {
             let scores = [];
+            let hasInvalidScore = false;
+            
             for (let i = 1; i <= playerCount; i++) {
                 const scoreInput = document.getElementById(`score${i}`);
                 const nameInput = document.getElementById(`name${i}`);
-                if (scoreInput.value && Number(scoreInput.value) >= 50) {
-                    scores.push({
-                        player: i,
-                        name: nameInput.value || `${i}`,
-                        score: Number(scoreInput.value)
-                    });
+                
+                if (scoreInput.value) {
+                    const scoreValue = Number(scoreInput.value);
+                    
+                    // スコア範囲のチェック
+                    if (scoreValue < 50 || scoreValue > 200) {
+                        scoreInput.classList.add('invalid');
+                        hasInvalidScore = true;
+                    } else {
+                        scoreInput.classList.remove('invalid');
+                        scores.push({
+                            player: i,
+                            name: nameInput.value || `${i}`,
+                            score: scoreValue
+                        });
+                    }
                 }
+            }
+            
+            // 無効なスコアがある場合はエラーメッセージを表示して処理を中止
+            if (hasInvalidScore) {
+                showAlert('スコアは50から200の間で入力してください', 'error');
+                return;
             }
 
             if (scores.length === 0) {
